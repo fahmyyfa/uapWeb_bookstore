@@ -23,24 +23,28 @@ class BookController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'title'       => 'required|string|max:255',
             'author'      => 'required|string|max:255',
             'price'       => 'required|integer|min:0',
             'stock'       => 'required|integer|min:0',
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        Book::create([
-            'category_id' => $request->category_id,
-            'title'       => $request->title,
-            'slug'        => Str::slug($request->title), // 🔥 FIX UTAMA
-            'author'      => $request->author,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-        ]);
+        // slug aman
+        $data['slug'] = Str::slug($data['title']) . '-' . time();
 
-        return redirect()->route('books.index')
+        // upload image
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')
+                ->store('books', 'public');
+        }
+
+        Book::create($data);
+
+        return redirect()
+            ->route('books.index')
             ->with('success', 'Buku berhasil ditambahkan');
     }
 
@@ -52,24 +56,24 @@ class BookController extends Controller
 
     public function update(Request $request, Book $book)
     {
-        $request->validate([
+        $data = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'title'       => 'required|string|max:255',
             'author'      => 'required|string|max:255',
             'price'       => 'required|integer|min:0',
             'stock'       => 'required|integer|min:0',
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $book->update([
-            'category_id' => $request->category_id,
-            'title'       => $request->title,
-            'slug'        => Str::slug($request->title),
-            'author'      => $request->author,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-        ]);
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')
+                ->store('books', 'public');
+        }
 
-        return redirect()->route('books.index')
+        $book->update($data);
+
+        return redirect()
+            ->route('books.index')
             ->with('success', 'Buku berhasil diperbarui');
     }
 
@@ -77,7 +81,8 @@ class BookController extends Controller
     {
         $book->delete();
 
-        return redirect()->route('books.index')
+        return redirect()
+            ->route('books.index')
             ->with('success', 'Buku berhasil dihapus');
     }
 }

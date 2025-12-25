@@ -10,74 +10,58 @@ use App\Http\Controllers\ShopController;
 
 /*
 |--------------------------------------------------------------------------
-| AUTHENTICATION
+| AUTH
 |--------------------------------------------------------------------------
 */
-Route::get('/login', [WebAuthController::class, 'showLogin'])
-    ->name('login');
-
+Route::get('/login', [WebAuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [WebAuthController::class, 'login']);
 
-Route::get('/register', [WebAuthController::class, 'showRegister'])
-    ->name('register');
-
+Route::get('/register', [WebAuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [WebAuthController::class, 'register']);
 
-Route::post('/logout', [WebAuthController::class, 'logout'])
-    ->name('logout');
+Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN AREA (AUTH + ADMIN)
+| ADMIN
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'admin'])->group(function () {
 
-    // Dashboard Admin
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // CRUD Master Data
     Route::resource('categories', CategoryController::class);
     Route::resource('books', BookController::class);
 
-    // Semua transaksi (ADMIN)
     Route::get('/transactions', [TransactionController::class, 'index'])
         ->name('transactions.index');
 });
 
 /*
 |--------------------------------------------------------------------------
-| USER / CUSTOMER AREA
+| USER
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
 
-    /*
-    | SHOP (USER ONLY)
-    | Admin TIDAK diarahkan ke sini karena redirect login
-    */
-    Route::get('/shop', [ShopController::class, 'index'])
-        ->name('shop.index');
+    Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+    Route::get('/shop/{book}', [ShopController::class, 'show'])->name('shop.show');
+    Route::post('/shop/{book}/buy', [ShopController::class, 'buy'])->name('shop.buy');
 
-    Route::get('/shop/{book}', [ShopController::class, 'show'])
-        ->name('shop.show');
-
-    Route::post('/shop/{book}/buy', [ShopController::class, 'buy'])
-        ->name('shop.buy');
-
-    /*
-    | USER TRANSACTION HISTORY
-    */
     Route::get('/my-transactions', [TransactionController::class, 'user'])
         ->name('transactions.user');
+
+    // 🔥 INVOICE
+    Route::get('/invoice/{transaction}', [TransactionController::class, 'invoice'])
+        ->name('transactions.invoice');
+
+    Route::get('/invoice-preview/{transaction}', [TransactionController::class, 'preview'])
+        ->name('transactions.preview');
 });
 
 /*
 |--------------------------------------------------------------------------
-| FALLBACK (OPTIONAL BUT CLEAN)
+| FALLBACK
 |--------------------------------------------------------------------------
 */
-Route::fallback(function () {
-    return redirect()->route('login');
-});
+Route::fallback(fn () => redirect()->route('login'));

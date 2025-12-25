@@ -1,38 +1,41 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-xl mx-auto mt-10">
+<div class="p-6 max-w-4xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl shadow">
 
-    @if ($errors->any())
-        <div class="mb-4 bg-red-100 text-red-700 px-4 py-3 rounded">
-            {{ $errors->first() }}
-        </div>
-    @endif
+        <img
+            src="{{ $book->image
+                ? asset('storage/' . $book->image)
+                : asset('images/no-image.png') }}"
+            class="w-full h-96 object-cover rounded-xl">
 
-    <div class="bg-white shadow rounded p-6">
-        <h2 class="text-2xl font-bold mb-2">{{ $book->title }}</h2>
-        <p class="text-gray-600">{{ $book->category->name }}</p>
+        <div>
+            <h2 class="text-2xl font-bold mb-2">{{ $book->title }}</h2>
+            <p class="text-gray-500 mb-1">{{ $book->author }}</p>
 
-        <p class="mt-4">Harga: <strong>Rp {{ number_format($book->price) }}</strong></p>
-        <p>Stok tersedia: {{ $book->stock }}</p>
+            <p class="text-green-600 text-xl font-bold mb-4">
+                Rp {{ number_format($book->price, 0, ',', '.') }}
+            </p>
 
-        <form method="POST" action="{{ route('shop.buy', $book) }}" class="mt-6 space-y-4">
-            @csrf
+            <p class="text-sm text-gray-600 mb-4">
+                Stok tersedia: {{ $book->stock }}
+            </p>
 
-            <div>
-                <label class="block text-sm font-semibold mb-1">Jumlah</label>
-                <input type="number"
-                       name="quantity"
+            <form action="{{ route('shop.buy', $book) }}" method="POST">
+                @csrf
+                <input type="number" name="quantity"
                        min="1"
                        max="{{ $book->stock }}"
-                       required
-                       class="w-full border rounded px-3 py-2">
-            </div>
+                       value="1"
+                       class="border rounded p-2 w-24 mb-4">
 
-            <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                Beli Sekarang
-            </button>
-        </form>
+                <button class="block w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+                    Beli Sekarang
+                </button>
+            </form>
+        </div>
+
     </div>
 </div>
 @endsection
